@@ -6,18 +6,30 @@ Un juego de trivia simple donde los jugadores deben adivinar a qué artista pert
 
 ### Opción 1: Con Servidor Local (Recomendado)
 ```bash
-# Iniciar servidor automáticamente
+# Iniciar servidor en segundo plano
 ./start.sh
 
-# O manualmente:
+# Ver estado del servidor
+./status.sh
+
+# Detener servidor
+./stop.sh
+```
+
+**URLs del juego:**
+- Python: `http://localhost:8097`
+- Node.js: `http://localhost:8099`
+
+### Opción 2: Servidor Manual
+```bash
+# Python
 python3 server.py
-# O
+
+# Node.js
 node server.js
 ```
 
-Luego abre tu navegador en: `http://localhost:8000`
-
-### Opción 2: Sin Servidor (Limitado)
+### Opción 3: Sin Servidor (Limitado)
 1. Abre `index.html` directamente en tu navegador
 2. ⚠️ **Nota**: Algunas funciones pueden no funcionar debido a restricciones de CORS
 
@@ -27,6 +39,30 @@ Luego abre tu navegador en: `http://localhost:8000`
 3. Observa la pintura y selecciona el artista correcto
 4. ¡El juego te dirá si acertaste o no!
 
+## 🔧 Gestión del Servidor
+
+### Comandos Principales
+```bash
+./start.sh   # Iniciar servidor en segundo plano
+./stop.sh    # Detener servidor
+./status.sh  # Ver estado y logs
+```
+
+### Características del Servidor en Segundo Plano
+- ✅ **Ejecución en background**: No bloquea la terminal
+- ✅ **Logs automáticos**: Se guardan en `server.log`
+- ✅ **Detección de duplicados**: Evita múltiples servidores
+- ✅ **Fácil gestión**: Comandos simples para controlar
+
+### Ver Logs en Tiempo Real
+```bash
+# Ver logs mientras el servidor corre
+tail -f server.log
+
+# Ver últimas 20 líneas
+tail -20 server.log
+```
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -35,7 +71,10 @@ artgame/
 ├── artists.json            # Configuración de artistas (generado automáticamente)
 ├── server.py               # Servidor Python para evitar CORS
 ├── server.js               # Servidor Node.js para evitar CORS
-├── start.sh                # Script para iniciar servidor automáticamente
+├── start.sh                # Script para iniciar servidor en segundo plano
+├── stop.sh                 # Script para detener servidor
+├── status.sh               # Script para ver estado del servidor
+├── server.log              # Logs del servidor (generado automáticamente)
 ├── generate_artists.py     # Script Python para generar artists.json
 ├── generate_artists.js     # Script Node.js para generar artists.json
 ├── generate_artists.sh     # Script Bash para generar artists.json
