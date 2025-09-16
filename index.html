@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia de Arte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .artist-selection {
+            text-align: center;
+        }
+        
+        .artist-checkbox {
+            margin: 10px;
+            font-size: 16px;
+        }
+        
+        .artist-checkbox input {
+            margin-right: 8px;
+        }
+        
+        .game-options {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .option-checkbox {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .option-checkbox input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .option-checkbox span {
+            color: #495057;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .game-area {
+            display: none;
+            text-align: center;
+        }
+        
+        .painting-container {
+            margin: 20px 0;
+        }
+        
+        .painting-image {
+            max-width: 400px;
+            max-height: 300px;
+            width: auto;
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .options {
+            margin: 20px 0;
+        }
+        
+        .option {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            background-color: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 200px;
+        }
+        
+        .option:hover {
+            background-color: #e9e9e9;
+        }
+        
+        .option.selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .result.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .next-button {
+            display: none;
+        }
+        
+        .auto-next-timer {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .auto-next-timer.active {
+            color: #007bff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Trivia de Arte</h1>
+        
+        <!-- Selección de artistas -->
+        <div id="artistSelection" class="artist-selection">
+            <h2>Selecciona los artistas para jugar:</h2>
+            <div id="artistList"></div>
+            
+            <div class="game-options">
+                <label class="option-checkbox">
+                    <input type="checkbox" id="autoNext" checked>
+                    <span>AutoNext: Pasar automáticamente a la siguiente pregunta (<span id="autoNextDelay">2</span> segundos)</span>
+                </label>
+            </div>
+            
+            <button id="startGame" disabled>Comenzar Juego</button>
+        </div>
+        
+        <!-- Área del juego -->
+        <div id="gameArea" class="game-area">
+            <h2>¿A qué artista pertenece esta pintura?</h2>
+            
+            <div class="painting-container">
+                <img id="paintingImage" class="painting-image" alt="Pintura del juego">
+            </div>
+            
+            <div class="options" id="options"></div>
+            
+            
+            <div id="result" class="result" style="display: none;"></div>
+            
+            <div id="autoNextTimer" class="auto-next-timer" style="display: none;"></div>
+            
+            <button id="nextQuestion" class="next-button">Siguiente Pregunta</button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        
+        class ArtTriviaGame {
+            constructor() {
+                this.artists = [];
+                this.selectedArtists = [];
+                this.currentPainting = null;
+                this.currentArtist = null;
+                this.selectedAnswer = null;
+                this.gameStarted = false;
+                this.autoNextEnabled = GAME_CONFIG.AUTO_NEXT_ENABLED_BY_DEFAULT;
+                this.autoNextTimer = null;
+                this.countdownTimer = null;
+                
+                this.initializeGame();
+            }
+            
+            async initializeGame() {
+                await this.loadArtists();
+                this.setupEventListeners();
+                this.renderArtistSelection();
+                this.initializeUI();
+            }
+            
+            async loadArtists() {
+                try {
+                    const response = await fetch('artists.json');
+                    const data = await response.json();
+                    this.artists = data.artists;
+                } catch (error) {
+                    console.error('Error cargando artistas:', error);
+                    // Fallback: cargar artistas por defecto
+                    this.artists = [
+                        {
+                            name: 'Alfred Sisley',
+                            paintings: [
+                                { name: '1.jpg', title: 'Paisaje de Alfred Sisley 1' },
+                                { name: '2.jpg', title: 'Paisaje de Alfred Sisley 2' }
+                            ]
+                        },
+                        {
+                            name: 'Paul Gauguin',
+                            paintings: [
+                                { name: '1.jpg', title: 'Obra de Paul Gauguin 1' },
+                                { name: '2.jpg', title: 'Obra de Paul Gauguin 2' }
+                            ]
+                        }
+                    ];
+                }
+            }
+            
+            setupEventListeners() {
+                document.getElementById('startGame').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                document.getElementById('nextQuestion').addEventListener('click', () => {
+                    this.nextQuestion();
+                });
+                
+                document.getElementById('autoNext').addEventListener('change', (e) => {
+                    this.autoNextEnabled = e.target.checked;
+                });
+            }
+            
+            renderArtistSelection() {
+                const artistList = document.getElementById('artistList');
+                artistList.innerHTML = '';
+                
+                // Ordenar artistas alfabéticamente
+                const sortedArtists = [...this.artists].sort((a, b) => 
+                    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+                );
+                
+                sortedArtists.forEach(artist => {
+                    const div = document.createElement('div');
+                    div.className = 'artist-checkbox';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = artist.name;
+                    checkbox.value = artist.name;
+                    checkbox.addEventListener('change', (e) => {
+                        this.toggleArtist(e.target.value, e.target.checked);
+                    });
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = artist.name;
+                    label.textContent = artist.name;
+                    
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    artistList.appendChild(div);
+                });
+            }
+            
+            initializeUI() {
+                // Configurar el checkbox de AutoNext
+                const autoNextCheckbox = document.getElementById('autoNext');
+                autoNextCheckbox.checked = this.autoNextEnabled;
+                
+                // Actualizar el texto con el delay configurado
+                const autoNextDelaySpan = document.getElementById('autoNextDelay');
+                autoNextDelaySpan.textContent = GAME_CONFIG.AUTO_NEXT_DELAY;
+            }
+            
+            toggleArtist(artistName, selected) {
+                if (selected) {
+                    this.selectedArtists.push(artistName);
+                } else {
+                    this.selectedArtists = this.selectedArtists.filter(name => name !== artistName);
+                }
+                
+                const startButton = document.getElementById('startGame');
+                startButton.disabled = this.selectedArtists.length < 2;
+            }
+            
+            startGame() {
+                if (this.selectedArtists.length < 2) {
+                    alert('Debes seleccionar al menos 2 artistas para jugar');
+                    return;
+                }
+                
+                document.getElementById('artistSelection').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'block';
+                
+                this.gameStarted = true;
+                this.nextQuestion();
+            }
+            
+            nextQuestion() {
+                // Seleccionar un artista aleatorio de los seleccionados
+                const randomArtistName = this.selectedArtists[Math.floor(Math.random() * this.selectedArtists.length)];
+                this.currentArtist = this.artists.find(artist => artist.name === randomArtistName);
+                
+                // Seleccionar una pintura aleatoria del artista
+                const randomPainting = this.currentArtist.paintings[Math.floor(Math.random() * this.currentArtist.paintings.length)];
+                this.currentPainting = randomPainting;
+                
+                // Mostrar la pintura
+                const paintingImage = document.getElementById('paintingImage');
+                // Siempre usar la ruta /artists/ para que el servidor la redirija
+                paintingImage.src = `artists/${this.currentArtist.name}/${this.currentPainting.name}`;
+                paintingImage.alt = this.currentPainting.title;
+                
+                // Crear opciones de respuesta
+                this.renderOptions();
+                
+                // Resetear estado
+                this.selectedAnswer = null;
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('nextQuestion').style.display = 'none';
+                document.getElementById('autoNextTimer').style.display = 'none';
+                
+                // Limpiar timers anteriores
+                this.clearTimers();
+                
+                // Rehabilitar opciones para nueva pregunta
+                document.querySelectorAll('.option').forEach(option => {
+                    option.style.pointerEvents = 'auto';
+                    option.style.backgroundColor = '#f9f9f9';
+                    option.style.color = 'black';
+                });
+            }
+            
+            renderOptions() {
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                
+                // Crear opciones ordenadas alfabéticamente
+                const sortedOptions = [...this.selectedArtists].sort((a, b) => 
+                    a.localeCompare(b, 'es', { sensitivity: 'base' })
+                );
+                
+                sortedOptions.forEach(artistName => {
+                    const option = document.createElement('div');
+                    option.className = 'option';
+                    option.textContent = artistName;
+                    option.addEventListener('click', () => {
+                        this.selectAnswer(artistName);
+                    });
+                    optionsContainer.appendChild(option);
+                });
+            }
+            
+            selectAnswer(artistName) {
+                // Remover selección anterior
+                document.querySelectorAll('.option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // Seleccionar nueva opción
+                event.target.classList.add('selected');
+                this.selectedAnswer = artistName;
+                
+                // Evaluar inmediatamente
+                this.checkAnswer();
+            }
+            
+            checkAnswer() {
+                if (!this.selectedAnswer) {
+                    return;
+                }
+                
+                const isCorrect = this.selectedAnswer === this.currentArtist.name;
+                const resultDiv = document.getElementById('result');
+                
+                if (isCorrect) {
+                    resultDiv.className = 'result correct';
+                    resultDiv.textContent = '¡Correcto! 🎉';
+                } else {
+                    resultDiv.className = 'result incorrect';
+                    resultDiv.textContent = `Incorrecto. La respuesta correcta era: ${this.currentArtist.name}`;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+                // Deshabilitar todas las opciones después de responder
+                document.querySelectorAll('.option').forEach(option => {
+                    option.style.pointerEvents = 'none';
+                    if (option.textContent === this.currentArtist.name) {
+                        option.style.backgroundColor = '#4CAF50';
+                        option.style.color = 'white';
+                    }
+                });
+                
+                // Manejar AutoNext
+                if (this.autoNextEnabled) {
+                    this.startAutoNext();
+                } else {
+                    document.getElementById('nextQuestion').style.display = 'inline-block';
+                }
+            }
+            
+            startAutoNext() {
+                const timerDiv = document.getElementById('autoNextTimer');
+                timerDiv.style.display = 'block';
+                timerDiv.className = 'auto-next-timer active';
+                
+                let countdown = GAME_CONFIG.AUTO_NEXT_DELAY;
+                this.updateTimerDisplay(countdown);
+                
+                this.countdownTimer = setInterval(() => {
+                    countdown--;
+                    this.updateTimerDisplay(countdown);
+                    
+                    if (countdown <= 0) {
+                        this.clearTimers();
+                        this.nextQuestion();
+                    }
+                }, 1000);
+            }
+            
+            updateTimerDisplay(seconds) {
+                const timerDiv = document.getElementById('autoNextTimer');
+                timerDiv.textContent = `Siguiente pregunta en ${seconds} segundo${seconds !== 1 ? 's' : ''}...`;
+            }
+            
+            clearTimers() {
+                if (this.autoNextTimer) {
+                    clearTimeout(this.autoNextTimer);
+                    this.autoNextTimer = null;
+                }
+                if (this.countdownTimer) {
+                    clearInterval(this.countdownTimer);
+                    this.countdownTimer = null;
+                }
+            }
+        }
+        
+        // Inicializar el juego cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            new ArtTriviaGame();
+        });
+    </script>
+</body>
+</html>
