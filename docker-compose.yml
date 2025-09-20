@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   artgame:
     build: .
@@ -21,7 +19,7 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - artgame-network
+      - default
 
   # Servicio opcional para desarrollo con hot-reload
   artgame-dev:
@@ -38,11 +36,11 @@ services:
     profiles:
       - dev
     networks:
-      - artgame-network
+      - default
 
 networks:
-  artgame-network:
-    driver: services
+  default:
+    name: services
 
 volumes:
   logs:
