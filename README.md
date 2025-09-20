@@ -83,7 +83,7 @@ node server.js
 
 ### Requisitos
 - Docker y Docker Compose instalados
-- Directorio de pinturas accesible (configurado en docker-compose.yml)
+- Directorio `./artists/` con las pinturas (ruta relativa al proyecto)
 
 ## 🔧 Gestión del Servidor Local
 
@@ -231,22 +231,25 @@ const GAME_CONFIG = {
 
 Para usar un directorio diferente para las imágenes de artistas:
 
-1. **Edita `config.js`**:
+1. **Para uso local** - Edita `config.js`:
    ```javascript
    ARTISTS_DIRECTORY: '/mnt/d/Pinturas',  // Ruta absoluta
    // O
    ARTISTS_DIRECTORY: 'mi_carpeta',       // Ruta relativa al proyecto
    ```
 
-2. **Estructura del directorio**:
+2. **Para Docker** - Coloca las pinturas en `./artists/`:
    ```
-   /mnt/d/Pinturas/
-   ├── Alfred Sisley/
-   │   ├── pintura1.jpg
-   │   └── pintura2.jpg
-   └── Paul Gauguin/
-       ├── pintura1.jpg
-       └── pintura2.jpg
+   artgame/
+   ├── artists/                    # ← Directorio para Docker
+   │   ├── Alfred Sisley/
+   │   │   ├── pintura1.jpg
+   │   │   └── pintura2.jpg
+   │   └── Paul Gauguin/
+   │       ├── pintura1.jpg
+   │       └── pintura2.jpg
+   ├── docker-compose.yml
+   └── ...
    ```
 
 3. **Regenera `artists.json`**:

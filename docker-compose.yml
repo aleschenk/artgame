@@ -5,8 +5,8 @@ services:
     ports:
       - "8097:8097"
     volumes:
-      # Montar directorio de artistas (ajusta la ruta según tu sistema)
-      - /mnt/d/pinturas:/app/artists:ro
+      # Montar directorio de artistas (ruta relativa al proyecto)
+      - ./artists:/app/artists:ro
       # Montar logs para persistencia
       - ./logs:/app/logs
     environment:
@@ -29,7 +29,7 @@ services:
       - "8098:8097"
     volumes:
       - .:/app
-      - /mnt/d/pinturas:/app/artists:ro
+      - ./artists:/app/artists:ro
     environment:
       - PYTHONUNBUFFERED=1
     command: ["python3", "server.py"]
