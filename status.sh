@@ -44,3 +44,5 @@ echo "🔧 Comandos disponibles:"
 echo "  ./start.sh  - Iniciar servidor"
 echo "  ./stop.sh   - Detener servidor"
 echo "  ./status.sh - Ver estado (este comando)"
+
+

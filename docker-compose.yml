@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  artgame:
+    build: .
+    container_name: trivia-arte
+    ports:
+      - "8097:8097"
+    volumes:
+      # Montar directorio de artistas (ajusta la ruta según tu sistema)
+      - /mnt/d/pinturas:/app/artists:ro
+      # Montar logs para persistencia
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8097/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - artgame-network
+
+  # Servicio opcional para desarrollo con hot-reload
+  artgame-dev:
+    build: .
+    container_name: trivia-arte-dev
+    ports:
+      - "8098:8097"
+    volumes:
+      - .:/app
+      - /mnt/d/pinturas:/app/artists:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["python3", "server.py"]
+    profiles:
+      - dev
+    networks:
+      - artgame-network
+
+networks:
+  artgame-network:
+    driver: services
+
+volumes:
+  logs:
+    driver: local

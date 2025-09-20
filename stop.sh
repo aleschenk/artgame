@@ -26,3 +26,4 @@ if [ -f "server.log" ]; then
 fi
 
 echo "🎯 Servidor detenido completamente"
+

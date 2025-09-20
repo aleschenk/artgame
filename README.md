@@ -4,7 +4,25 @@ Un juego de trivia simple donde los jugadores deben adivinar a qué artista pert
 
 ## 🚀 Cómo Jugar
 
-### Opción 1: Con Servidor Local (Recomendado)
+### Opción 1: Con Docker (Más Fácil)
+```bash
+# Construir y ejecutar con Docker
+./docker.sh build
+./docker.sh start
+
+# Ver estado
+./docker.sh status
+
+# Ver logs
+./docker.sh logs
+
+# Detener
+./docker.sh stop
+```
+
+**URL del juego:** `http://localhost:8097`
+
+### Opción 2: Con Servidor Local
 ```bash
 # Iniciar servidor en segundo plano
 ./start.sh
@@ -39,7 +57,35 @@ node server.js
 3. Observa la pintura y selecciona el artista correcto
 4. ¡El juego te dirá si acertaste o no!
 
-## 🔧 Gestión del Servidor
+## 🐳 Gestión con Docker
+
+### Comandos de Docker
+```bash
+./docker.sh build    # Construir imagen
+./docker.sh start    # Iniciar contenedor
+./docker.sh stop     # Detener contenedor
+./docker.sh restart  # Reiniciar contenedor
+./docker.sh logs     # Ver logs
+./docker.sh status   # Ver estado
+./docker.sh shell    # Abrir shell en contenedor
+./docker.sh dev      # Modo desarrollo
+./docker.sh clean    # Limpiar todo
+./docker.sh help     # Mostrar ayuda
+```
+
+### Características de Docker
+- ✅ **Aislamiento**: Ejecuta en contenedor aislado
+- ✅ **Portabilidad**: Funciona en cualquier sistema con Docker
+- ✅ **Fácil despliegue**: Un solo comando para iniciar
+- ✅ **Health checks**: Monitoreo automático del servicio
+- ✅ **Volúmenes**: Monta tu directorio de pinturas
+- ✅ **Logs persistentes**: Logs guardados en volumen
+
+### Requisitos
+- Docker y Docker Compose instalados
+- Directorio de pinturas accesible (configurado en docker-compose.yml)
+
+## 🔧 Gestión del Servidor Local
 
 ### Comandos Principales
 ```bash
@@ -68,9 +114,14 @@ tail -20 server.log
 ```
 artgame/
 ├── index.html              # Juego principal
+├── config.js               # Configuración del juego
 ├── artists.json            # Configuración de artistas (generado automáticamente)
 ├── server.py               # Servidor Python para evitar CORS
 ├── server.js               # Servidor Node.js para evitar CORS
+├── Dockerfile              # Imagen Docker
+├── docker-compose.yml      # Configuración Docker Compose
+├── docker.sh               # Script para gestionar Docker
+├── .dockerignore           # Archivos a ignorar en Docker
 ├── start.sh                # Script para iniciar servidor en segundo plano
 ├── stop.sh                 # Script para detener servidor
 ├── status.sh               # Script para ver estado del servidor
@@ -78,7 +129,7 @@ artgame/
 ├── generate_artists.py     # Script Python para generar artists.json
 ├── generate_artists.js     # Script Node.js para generar artists.json
 ├── generate_artists.sh     # Script Bash para generar artists.json
-└── artists/                # Carpeta con pinturas de artistas
+└── artists/                # Carpeta con pinturas de artistas (montada en Docker)
     ├── Alfred Sisley/
     │   ├── 1.jpg
     │   ├── 2.jpg
